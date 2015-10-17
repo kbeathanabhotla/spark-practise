@@ -1,20 +1,14 @@
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.rdd.RDD
 
 /**
- * Created by SaiKrishnaKishore on 10/13/2015.
+ * Created by SaiKrishnaKishore on 10/17/2015.
  */
-object WordCount {
-  def main(args: Array[String]): Unit = {
+class WordCount {
+  def countWords(rdd: RDD[String], splitPattern: String): RDD[(String, Int)] = {
+    rdd.flatMap(record => record.split(splitPattern)).map(token => (token, 1)).reduceByKey((x, y) => x + y)
+  }
 
-    val conf = new SparkConf().setAppName("Word Count Application").setMaster("local")
-    val sc = new SparkContext(conf)
-
-    val logData = sc.textFile(getClass.getResource("logging.log").getPath, 2)
-    val wordCount = logData.flatMap(s => s.split("\\s+"))
-                            .map(s => (s, 1))
-                            .reduceByKey((x, y) => x + y)
-                            //.saveAsTextFile(getClass.getResource("logging-output" + System.currentTimeMillis() + ".txt").getPath);
-
-    wordCount.foreach(s => println(s))
+  def countWords(rdd: RDD[String]): RDD[(String, Int)] = {
+    countWords(rdd, "\\s+")
   }
 }
